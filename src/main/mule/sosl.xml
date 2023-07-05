@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<salesforce:sfdc-config name="Salesforce_Config1" doc:name="Salesforce Config" doc:id="5fcf4631-7526-4a90-8b31-502ac562c8da" >
+		<salesforce:basic-connection username="nari123@bcs.com" password="Nari@2800" securityToken="P0fjuWN1XcUeOSCZ4UtRI2O2M" />
+	</salesforce:sfdc-config>
+	<flow name="soslFlow" doc:id="2acd3b2a-996d-4153-abef-9451f85d0974" >
+		<http:listener doc:name="Listener" doc:id="afd1e213-4066-46de-b47d-83c0c41ff602" config-ref="HTTP_Listener_config" path="/sosl"/>
+		<salesforce:search doc:name="Search" doc:id="c7797257-254b-4043-bb87-20d342382873" config-ref="Salesforce_Config">
+			<salesforce:search-string ><![CDATA[FIND { :searchQuery } IN ALL FIELDS RETURNING Contact(Name,Phone),Account(Name,Phone)]]></salesforce:search-string>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	searchQuery : attributes.queryParams.name
+}]]]></salesforce:parameters>
+		</salesforce:search>
+		<ee:transform doc:name="Transform Message" doc:id="2578b01f-7326-42b9-bb2f-13ca60660c18" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="250c69b1-09ce-4f05-b3c9-1aceac34809a" message="#[payload]"/>
+	</flow>
+</mule>

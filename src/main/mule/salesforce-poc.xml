@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq" xmlns:sdc="http://www.mulesoft.org/schema/mule/sdc"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/sdc http://www.mulesoft.org/schema/mule/sdc/current/mule-sdc.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="f9c8c9fb-bf13-43dc-bf66-fd66d95a982f" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="2e4f5178-8c21-4e42-89e1-70ea54255632" >
+		<salesforce:basic-connection username="nari123@bcs.com" password="Nari@2800" securityToken="P0fjuWN1XcUeOSCZ4UtRI2O2M" />
+	</salesforce:sfdc-config>
+	<anypoint-mq:config name="Anypoint_MQ_Config" doc:name="Anypoint MQ Config" doc:id="353d268a-6263-42f7-9113-2c1b7a509bbe" >
+		<anypoint-mq:connection clientId="d0a74fde9b4d4c26b036b57b45c2f30c" clientSecret="Cf0e25783D6846BaAe8EC175B53a86A0" />
+	</anypoint-mq:config>
+	<flow name="salesforce-pocFlow" doc:id="98e1c373-09ce-473f-bf5c-6c4350cb013d" >
+		<http:listener doc:name="Listener" doc:id="695e09b4-3ece-4649-9963-f5b2f7137427" config-ref="HTTP_Listener_config" path="/soql"/>
+		<salesforce:query doc:name="Query" doc:id="d6112502-6987-49e2-a8f8-0743d631cebc" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT Id, Name, createdDate FROM Account ORDER BY Name LIMIT 13 OFFSET 10]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="3de944c6-71c1-4f57-a695-bebb37924ba9">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="ba708f93-b66a-426b-b0fc-5199d076a1a6" message="#[payload]"/>
+	</flow>
+</mule>
